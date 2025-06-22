@@ -8,17 +8,17 @@ import type { Flashcard } from "@/types/flashcard"
 interface FlashcardCardProps {
   flashcard: Flashcard
   onClick: (flashcard: Flashcard) => void
-  onRename?: (flashcardId: number) => void
-  onDelete?: (flashcardId: number) => void
+  onRename?: (flashcardId: string) => void
+  onDelete?: (flashcardId: string) => void
 }
 
-export function FlashcardCard({ flashcard, onClick, onRename, onDelete }: FlashcardCardProps) {
+export function FlashcardCard({ flashcard, onClick, onDelete }: FlashcardCardProps) {
   const handleClick = () => {
     onClick(flashcard)
   }
 
   return (
-    <FlashcardContextMenu onRename={() => onRename?.(flashcard.id)} onDelete={() => onDelete?.(flashcard.id)}>
+    <FlashcardContextMenu onDelete={() => onDelete?.(flashcard.id)}>
       <Card
         className="bg-white/95 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer hover:scale-[1.02] group"
         onClick={handleClick}

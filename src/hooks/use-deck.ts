@@ -4,38 +4,24 @@ import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type { DeckData, Flashcard } from "@/types/flashcard"
 
-// Mock data - in real app this would come from API/database based on deck ID
-const MOCK_DECK_DATA: Record<string, DeckData> = {
-  "1": {
-    id: "1",
-    title: "Kalkulus",
-    totalCount: 12,
-    flashcards: [
-      { id: 1, title: "Limit Fungsi", content: "Konsep dasar limit dalam kalkulus" },
-      { id: 2, title: "Turunan", content: "Definisi dan aplikasi turunan" },
-      { id: 3, title: "Integral", content: "Integral tak tentu dan tentu" },
-    ],
-  },
-  "2": {
-    id: "2",
-    title: "Dasar Pemrograman",
-    totalCount: 10,
-    flashcards: [
-      { id: 1, title: "Variabel dan Tipe Data", content: "Konsep dasar variabel dalam pemrograman" },
-      { id: 2, title: "Struktur Kontrol", content: "If-else, loop, dan percabangan" },
-      { id: 3, title: "Fungsi", content: "Definisi dan penggunaan fungsi" },
-    ],
-  },
-  "3": {
-    id: "3",
-    title: "Rekayasa Kebutuhan",
-    totalCount: 5,
-    flashcards: [
-      { id: 1, title: "Use Case Diagram", content: "Diagram untuk menggambarkan interaksi user dengan sistem" },
-      { id: 2, title: "Requirements Gathering", content: "Teknik pengumpulan kebutuhan sistem" },
-      { id: 3, title: "User Stories", content: "Format penulisan kebutuhan dari perspektif user" },
-    ],
-  },
+interface ApiCard {
+  id: string
+  front: string
+  back: string
+  deck_id: string
+  created_at: string | null
+  updated_at: string | null
+}
+
+interface ApiDeck {
+  id: string
+  name: string
+  description: string | null
+  created_at: string | null
+  updated_at: string | null
+  user_id: string
+  is_public: boolean | null
+  card_count?: number
 }
 
 export function useDeck(deckId: string) {
@@ -46,14 +32,43 @@ export function useDeck(deckId: string) {
   const [selectedFlashcard, setSelectedFlashcard] = useState<Flashcard | null>(null)
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      const data = MOCK_DECK_DATA[deckId]
-      setDeckData(data || null)
-      setIsLoading(false)
-    }, 500)
+    const fetchDeckData = async () => {
+      try {
+        const deckResponse = await fetch(`/api/decks/${deckId}`)
+        if (!deckResponse.ok) {
+          console.error('Failed to fetch deck')
+          setIsLoading(false)
+          return
+        }
+        const deckData = await deckResponse.json()
 
-    return () => clearTimeout(timer)
+        const cardsResponse = await fetch(`/api/cards?deck_id=${deckId}&sort_by_progress=true`)
+        let cards: ApiCard[] = []
+        if (cardsResponse.ok) {
+          const cardsData = await cardsResponse.json()
+          cards = cardsData.cards || []
+        }
+
+        const transformedDeckData: DeckData = {
+          id: deckData.deck.id,
+          title: deckData.deck.name,
+          totalCount: deckData.deck.card_count || cards.length,
+          flashcards: cards.map((card: ApiCard) => ({
+            id: card.id,
+            title: card.front,
+            content: card.back,
+          })),
+        }
+
+        setDeckData(transformedDeckData)
+      } catch (error) {
+        console.error('Error fetching deck data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDeckData()
   }, [deckId])
 
   const handleBack = useCallback(() => {
@@ -63,40 +78,62 @@ export function useDeck(deckId: string) {
   const handlePlay = useCallback(() => {
     if (deckData) {
       console.log("Start studying deck:", deckData.id)
-      // Navigate to study mode
-      // router.push(`/study/${deckData.id}`)
     }
   }, [deckData])
 
   const handleStartStudy = useCallback(() => {
     if (deckData) {
       console.log("Start studying deck:", deckData.id)
-      // Navigate to study mode
-      // router.push(`/study/${deckData.id}`)
     }
   }, [deckData])
 
   const handleFlashcardClick = useCallback((flashcard: Flashcard) => {
     console.log("Open flashcard:", flashcard.id)
-    // Navigate to flashcard detail or study mode
-    // router.push(`/flashcard/${flashcard.id}`)
   }, [])
 
-  const handleAddFlashcard = useCallback(() => {
+  const handleAddFlashcard = useCallback(async () => {
     if (deckData) {
-      console.log("Add new flashcard to deck:", deckData.id)
-      // Navigate to add flashcard page or open modal
-      // router.push(`/deck/${deckData.id}/add`)
-    }
-  }, [deckData])
+      try {
+        const response = await fetch('/api/cards', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            deck_id: deckId,
+            front: 'New Flashcard',
+            back: 'Content here',
+          }),
+        })
 
-  const handleRenameFlashcard = useCallback((flashcardId: number) => {
+        if (response.ok) {
+          const data = await response.json()
+          const newFlashcard: Flashcard = {
+            id: data.card.id,
+            title: data.card.front,
+            content: data.card.back,
+          }
+          
+          setDeckData(prev => prev ? {
+            ...prev,
+            flashcards: [...prev.flashcards, newFlashcard],
+            totalCount: prev.totalCount + 1,
+          } : null)
+        } else {
+          console.error('Failed to create flashcard')
+        }
+      } catch (error) {
+        console.error('Error creating flashcard:', error)
+      }
+    }
+  }, [deckData, deckId])
+
+  const handleRenameFlashcard = useCallback((flashcardId: string) => {
     console.log("Rename flashcard:", flashcardId)
-    // Open rename modal or navigate to edit page
   }, [])
 
   const handleDeleteFlashcard = useCallback(
-    (flashcardId: number) => {
+    (flashcardId: string) => {
       const flashcard = deckData?.flashcards.find((f) => f.id === flashcardId)
       if (flashcard) {
         setSelectedFlashcard(flashcard)
@@ -106,16 +143,28 @@ export function useDeck(deckId: string) {
     [deckData],
   )
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = useCallback(async () => {
     if (selectedFlashcard && deckData) {
-      const updatedFlashcards = deckData.flashcards.filter((f) => f.id !== selectedFlashcard.id)
-      setDeckData({
-        ...deckData,
-        flashcards: updatedFlashcards,
-        totalCount: updatedFlashcards.length,
-      })
-      setShowDeleteModal(false)
-      setSelectedFlashcard(null)
+      try {
+        const response = await fetch(`/api/cards/${selectedFlashcard.id}`, {
+          method: 'DELETE',
+        })
+
+        if (response.ok) {
+          const updatedFlashcards = deckData.flashcards.filter((f) => f.id !== selectedFlashcard.id)
+          setDeckData({
+            ...deckData,
+            flashcards: updatedFlashcards,
+            totalCount: updatedFlashcards.length,
+          })
+          setShowDeleteModal(false)
+          setSelectedFlashcard(null)
+        } else {
+          console.error('Failed to delete flashcard')
+        }
+      } catch (error) {
+        console.error('Error deleting flashcard:', error)
+      }
     }
   }, [selectedFlashcard, deckData])
 
@@ -126,7 +175,6 @@ export function useDeck(deckId: string) {
 
   const handleSettingsClick = useCallback(() => {
     console.log("Settings clicked")
-    // Navigate to settings page or open settings modal
   }, [])
 
   return {

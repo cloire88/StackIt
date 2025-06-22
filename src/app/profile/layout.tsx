@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { useEffect, useState } from "react"
 
-export default function DeckLayout({
+export default function ProfileLayout({
   children,
 }: {
   children: React.ReactNode
@@ -40,4 +40,4 @@ export default function DeckLayout({
       <SidebarInset className="bg-gradient-to-br from-blue-500 via-blue-600 to-slate-800">{children}</SidebarInset>
     </SidebarProvider>
   )
-}
+} 
