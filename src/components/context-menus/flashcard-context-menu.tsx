@@ -7,19 +7,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 interface FlashcardContextMenuProps {
   children: React.ReactNode
-  onRename: () => void
   onDelete: () => void
 }
 
-export function FlashcardContextMenu({ children, onRename, onDelete }: FlashcardContextMenuProps) {
+export function FlashcardContextMenu({ children, onDelete }: FlashcardContextMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-32">
-        <DropdownMenuItem onClick={onRename} className="flex items-center gap-2">
-          <Edit className="w-4 h-4" />
-          <span>Rename</span>
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={onDelete} className="flex items-center gap-2 text-red-600">
           <Trash2 className="w-4 h-4" />
           <span>Hapus</span>

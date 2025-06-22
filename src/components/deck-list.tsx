@@ -7,9 +7,9 @@ interface DeckListProps {
   decks: Deck[]
   onDeckClick: (deck: Deck) => void
   searchQuery?: string
-  onAddTag?: (deckId: number) => void
-  onRename?: (deckId: number) => void
-  onDelete?: (deckId: number) => void
+  onAddTag?: (deckId: string) => void
+  onRename?: (deckId: string) => void
+  onDelete?: (deckId: string) => void
 }
 
 export function DeckList({ decks, onDeckClick, searchQuery = "", onAddTag, onRename, onDelete }: DeckListProps) {

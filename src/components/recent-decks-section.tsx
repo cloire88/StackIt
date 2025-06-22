@@ -6,9 +6,12 @@ import type { Deck } from "@/types/deck"
 interface RecentDecksSectionProps {
   decks: Deck[]
   onDeckClick: (deck: Deck) => void
+  onRename?: (deckId: string) => void
+  onDelete?: (deckId: string) => void
+  onAddTag?: (deckId: string) => void
 }
 
-export function RecentDecksSection({ decks, onDeckClick }: RecentDecksSectionProps) {
+export function RecentDecksSection({ decks, onDeckClick, onRename, onDelete, onAddTag }: RecentDecksSectionProps) {
   if (decks.length === 0) {
     return (
       <div className="mb-6">
@@ -25,7 +28,14 @@ export function RecentDecksSection({ decks, onDeckClick }: RecentDecksSectionPro
       <h2 className="text-2xl font-semibold text-white mb-6">Terakhir dibuka</h2>
       <div className="space-y-4">
         {decks.map((deck) => (
-          <DeckCard key={deck.id} deck={deck} onClick={onDeckClick} />
+          <DeckCard 
+            key={deck.id} 
+            deck={deck} 
+            onClick={onDeckClick}
+            onRename={onRename}
+            onDelete={onDelete}
+            onAddTag={onAddTag}
+          />
         ))}
       </div>
     </div>

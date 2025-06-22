@@ -1,11 +1,13 @@
 "use client"
 
-import { use } from "react"
+import { use, useState } from "react"
 import { AppHeader } from "@/components/app-header"
 import { DeckHeader } from "@/components/deck-header"
 import { FlashcardList } from "@/components/flashcard-list"
 import { AddFlashcardButton } from "@/components/add-flashcard-button"
 import { StudyActionButtons } from "@/components/study-action-buttons"
+import { StudySession } from "@/components/study-session"
+import { FloatingActionButton } from "@/components/floating-action-button"
 import { ConfirmDeleteModal } from "@/components/modals/confirm-delete-modal"
 import { useDeck } from "@/hooks/use-deck"
 
@@ -31,6 +33,24 @@ export default function DeckPage({ params }: DeckPageProps) {
     handleConfirmDelete,
     handleCloseDeleteModal,
   } = useDeck(id)
+
+  const [isStudying, setIsStudying] = useState(false)
+
+  const handleStartStudySession = () => {
+    console.log("Starting study session for deck:", id)
+    setIsStudying(true)
+  }
+
+  const handleFinishStudySession = () => {
+    console.log("Finishing study session")
+    setIsStudying(false)
+    window.location.reload()
+  }
+
+  const handleExitStudySession = () => {
+    console.log("Exiting study session")
+    setIsStudying(false)
+  }
 
   if (isLoading) {
     return (
@@ -68,6 +88,25 @@ export default function DeckPage({ params }: DeckPageProps) {
     )
   }
 
+  if (isStudying) {
+    return (
+      <>
+        <AppHeader onSettingsClick={handleSettingsClick} />
+        <StudySession
+          cards={deckData.flashcards
+            .filter(card => card.title && card.content) 
+            .map(card => ({
+              id: card.id, 
+              front: card.title,
+              back: card.content || "" 
+            }))}
+          onFinish={handleFinishStudySession}
+          onBack={handleExitStudySession}
+        />
+      </>
+    )
+  }
+
   return (
     <>
       <AppHeader onSettingsClick={handleSettingsClick} />
@@ -78,14 +117,20 @@ export default function DeckPage({ params }: DeckPageProps) {
           <FlashcardList
             flashcards={deckData.flashcards}
             onFlashcardClick={handleFlashcardClick}
-            onRename={handleRenameFlashcard}
             onDelete={handleDeleteFlashcard}
           />
-          <AddFlashcardButton onClick={handleAddFlashcard} />
+          <StudyActionButtons onStartStudy={handleStartStudySession}/>
         </div>
       </main>
 
-      <StudyActionButtons onStartStudy={handleStartStudy} onAddCard={handleAddFlashcard} />
+      <FloatingActionButton 
+        mode="deck" 
+        deckId={id}
+        onCardCreated={() => {
+          console.log("Card created, refreshing deck data")
+          window.location.reload()
+        }}
+      />
 
       <ConfirmDeleteModal
         isOpen={showDeleteModal}

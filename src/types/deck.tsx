@@ -1,5 +1,5 @@
 export interface Deck {
-  id: number
+  id: string
   title: string
   flashcardCount: number
   tag: string
@@ -12,7 +12,7 @@ export interface DeckCardProps {
 }
 
 export interface ExtendedDeckCardProps extends DeckCardProps {
-  onAddTag?: (deckId: number) => void
-  onRename?: (deckId: number) => void
-  onDelete?: (deckId: number) => void
+  onAddTag?: (deckId: string) => void
+  onRename?: (deckId: string) => void
+  onDelete?: (deckId: string) => void
 }

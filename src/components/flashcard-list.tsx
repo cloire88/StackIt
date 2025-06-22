@@ -4,11 +4,10 @@ import { FlashcardCard } from "./flashcard-card"
 import type { FlashcardListProps } from "@/types/flashcard"
 
 interface ExtendedFlashcardListProps extends FlashcardListProps {
-  onRename?: (flashcardId: number) => void
-  onDelete?: (flashcardId: number) => void
+  onDelete?: (flashcardId: string) => void
 }
 
-export function FlashcardList({ flashcards, onFlashcardClick, onRename, onDelete }: ExtendedFlashcardListProps) {
+export function FlashcardList({ flashcards, onFlashcardClick,  onDelete }: ExtendedFlashcardListProps) {
   if (flashcards.length === 0) {
     return (
       <div className="space-y-4 mb-8">
@@ -27,7 +26,6 @@ export function FlashcardList({ flashcards, onFlashcardClick, onRename, onDelete
           key={flashcard.id}
           flashcard={flashcard}
           onClick={onFlashcardClick}
-          onRename={onRename}
           onDelete={onDelete}
         />
       ))}

@@ -1,9 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-const supabase = await createClient()
-
 export async function PUT(req: Request, {params} : {params: {id:string}} ){
+    const supabase = await createClient()
     const body = await req.json()
     const { front, back } = body
 
@@ -23,6 +22,7 @@ export async function PUT(req: Request, {params} : {params: {id:string}} ){
 }
 
 export async function DELETE(_:Request, { params } : { params : {id:string}}){
+    const supabase = await createClient()
     const { error } = await supabase.from('cards').delete().eq('id', params.id)
     
     if ( error ) return NextResponse.json(
